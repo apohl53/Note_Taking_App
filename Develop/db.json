@@ -1,0 +1,1 @@
+app.use('./notes', express.static('public'));
