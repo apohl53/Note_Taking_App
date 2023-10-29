@@ -43,37 +43,41 @@ app.get("/api/notes", function (req, res) {
 
 // POST /api/notes should receive a new note to save on the request body, add it to the db.json file, and then return the new note to the client.
 app.post("/api/notes", function (req, res) {
-  const newNote = req.body;
-  const newNoteId = generateUniqueId();
+  const noteData = getData();
 
-  const notes = getData();
-  newNote.id = newNoteId;
-  notes.push(newNote);
+  const newNote = {
+    id: generateId(),
+    title: req.body.title,
+    text: req.body.text,
+  };
 
-  writeData(notes);
+  noteData.push(newNote);
 
-  res.json(newNote);
+  writeData(noteData);
+
+  res.json({ message: "Database Updated" });
 });
 
 // DELETE notes by ID
 app.delete("/api/notes/:id", function (req, res) {
-  const noteId = req.params.id;
-
+  const noteId = req.params.noteId;
   const notes = getData();
-  const filteredNotes = notes.filter((note) => note.id !== noteId);
 
-  if (filteredNotes.length === notes.length) {
-    res.status(404).send("Note not found");
-    return;
+  const noteIndex = notes.findIndex((note) => note.id === noteId);
+
+  if (noteIndex !== -1) {
+    notes.splice(noteIndex, 1);
+
+    writeData(notes);
+
+    res.json({ message: "Database Updated" });
+  } else {
+    res.json({ error: "Note not found" });
   }
-
-  writeData(filteredNotes);
-
-  res.status(200).send("Note deleted!");
 });
 
 // Function to generate unique ID for each note
-function generateUniqueId() {
+function generateId() {
   return uuidv4();
 }
 
