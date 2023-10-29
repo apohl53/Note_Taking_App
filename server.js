@@ -75,7 +75,7 @@ app.post("/api/notes", function (req, res) {
   });
 });
 
-// DELETE ntoes by ID
+// DELETE notes by ID
 app.delete("/api/notes/:id", function (req, res) {
   const noteId = req.params.id;
 
