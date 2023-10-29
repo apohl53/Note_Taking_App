@@ -1,6 +1,7 @@
 const fs = require("fs");
 const express = require("express");
 const uuid = require("uuid");
+const path = require("path");
 const app = express();
 
 const PORT = process.env.PORT || 3333;
@@ -37,6 +38,7 @@ app.get("/api/notes", function (req, res) {
   fs.readFile("db.json", "utf-8", function (err, data) {
     if (err) {
       console.error("Error reading file:", err);
+      res.status(500).send("Internal Server Error");
     } else {
       const notes = JSON.parse(data);
       res.json(notes);
@@ -73,7 +75,41 @@ app.post("/api/notes", function (req, res) {
   });
 });
 
-// Function to genereate unique ID for each note
+// DELETE ntoes by ID
+app.delete("/api/notes/:id", function (req, res) {
+  const noteId = req.params.id;
+
+  // Read the JSON file
+  fs.readFile("db.json", "utf-8", function (err, data) {
+    if (err) {
+      console.error("Error reading file:", err);
+      res.status(500).send("Internal server error");
+    } else {
+      const notes = JSON.parse(data);
+
+      // Find notes with the matching ID
+      const filteredNotes = notes.filter((note) => note.id !== noteId);
+
+      // Checks if a note was deleted
+      if (filteredNotes.length === notes.length) {
+        res.status(404).send("Note not found");
+        return;
+      }
+
+      // Write the updated notes data in the db.json
+      fs.writeFile("db.json", JSON.stringify(filteredNotes), function (err) {
+        if (err) {
+          console.error("Error writing file:", err);
+          res.status(500).send("Internal server error");
+        } else {
+          res.status(200).send("Note deleted!");
+        }
+      });
+    }
+  });
+});
+
+// Function to generate unique ID for each note
 function generateUniqueId() {
   return uuid.v4();
 }
