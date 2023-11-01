@@ -77,11 +77,6 @@ app.delete("/api/notes/:id", function (req, res) {
   }
 });
 
-// Function to generate unique ID for each note
-function generateId() {
-  return uuidv4();
-}
-
 app.listen(PORT, function () {
   console.log(`Server listening on PORT ${PORT}`);
 });
