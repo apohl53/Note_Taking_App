@@ -1,13 +1,14 @@
 const fs = require("fs");
 const express = require("express");
 const { v4: uuidv4 } = require("uuid");
+const { getData, writeData, generateId } = require("./db");
 const path = require("path");
-const app = express();
 
+const app = express();
 const PORT = process.env.PORT || 3333;
 
+app.use(express.static("./public"));
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
 const dbPath = path.join(__dirname, "db.json");
 
@@ -72,31 +73,13 @@ app.delete("/api/notes/:id", function (req, res) {
 
     res.json({ message: "Database Updated" });
   } else {
-    res.json({ error: "Note not found" });
+    res.json({ error: "Note was not found" });
   }
 });
 
 // Function to generate unique ID for each note
 function generateId() {
   return uuidv4();
-}
-
-// Retrieves the data and returns as an object
-function getData() {
-  const json = fs.readFileSync(dbPath, "utf-8");
-  return JSON.parse(json);
-}
-
-// Take in the new database array and stringify it, then overwrite the old db.json with the new array
-function writeData(dbArray) {
-  fs.writeFile(dbPath, JSON.stringify(dbArray, null, 2), (err) => {
-    if (err) {
-      console.error("Error writing file:", err);
-      res.status(500).send("Internal server error");
-    } else {
-      console.log("Database Updated Successfully");
-    }
-  });
 }
 
 app.listen(PORT, function () {
