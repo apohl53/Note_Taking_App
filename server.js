@@ -25,36 +25,45 @@ app.get("/api/notes", function (req, res) {
 
 // POST /api/notes should receive a new note to save on the request body, add it to the db.json file, and then return the new note to the client.
 app.post("/api/notes", function (req, res) {
-  const noteData = getData();
+  getData()
+    .then((noteData) => {
+      const newNote = {
+        id: generateId(),
+        title: req.body.title,
+        text: req.body.text,
+      };
 
-  const newNote = {
-    id: generateId(),
-    title: req.body.title,
-    text: req.body.text,
-  };
+      noteData.push(newNote);
+      writeData(noteData);
 
-  noteData.push(newNote);
-  writeData(noteData);
-
-  res.json({ message: "Database Updated" });
+      res.json({ message: "Database Updated" });
+    })
+    .catch((err) => {
+      console.error("Error getting data:", err);
+      res.status(500).send("Internal Server Error");
+    });
 });
 
 // DELETE notes by ID
 app.delete("/api/notes/:id", function (req, res) {
-  const noteId = req.params.noteId;
-  const notes = getData();
+  getData()
+    .then((notes) => {
+      const noteId = req.params.id;
+      const noteIndex = notes.findIndex((note) => note.id === noteId);
 
-  const noteIndex = notes.findIndex((note) => note.id === noteId);
-
-  if (noteIndex !== -1) {
-    notes.splice(noteIndex, 1);
-    writeData(notes);
-    res.json({ message: "Database Updated" });
-  } else {
-    res.json({ error: "Note was not found" });
-  }
+      if (noteIndex !== -1) {
+        notes.splice(noteIndex, 1);
+        writeData(notes);
+        res.json({ message: "Database Updated" });
+      } else {
+        res.json({ error: "Note was not found" });
+      }
+    })
+    .catch((err) => {
+      console.error("Error getting data:", err);
+      res.status(500).send("Internal Server Error");
+    });
 });
-
 // GET /notes should return the notes.html file.
 app.get("/notes", function (req, res) {
   res.sendFile(path.join(__dirname, "./public/notes.html"), function (err) {
